@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: game-postgres
+    environment:
+      POSTGRES_DB: game
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    # 5433 no host evita conflito com PostgreSQL instalado no Windows (geralmente na 5432).
+    ports:
+      - "5434:5432"
+    volumes:
+      - game_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d game"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  game_pg_data:
