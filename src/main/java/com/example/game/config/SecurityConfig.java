@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,19 +31,21 @@ public class SecurityConfig {
 		http
 				.cors(Customizer.withDefaults())
 				.csrf(AbstractHttpConfigurer::disable)
-				.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+				.authorizeHttpRequests(auth -> auth
+						.requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+						.anyRequest().permitAll());
 		return http.build();
 	}
 
 	@Bean
 	public CorsConfigurationSource corsConfigurationSource(
-			@Value("${app.cors.allowed-origins}") String allowedOrigins) {
+			@Value("${app.cors.allowed-origin-patterns}") String allowedOriginPatterns) {
 		CorsConfiguration config = new CorsConfiguration();
-		List<String> origins = Arrays.stream(allowedOrigins.split(","))
+		List<String> patterns = Arrays.stream(allowedOriginPatterns.split(","))
 				.map(String::trim)
 				.filter(s -> !s.isEmpty())
 				.toList();
-		config.setAllowedOrigins(origins);
+		config.setAllowedOriginPatterns(patterns);
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("*"));
 		config.setAllowCredentials(false);
